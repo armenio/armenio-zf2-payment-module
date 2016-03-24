@@ -1,10 +1,10 @@
 <?php
 namespace Armenio\Payment\Payment;
-use Aircode\Payment\Payment;
+use Armenio\Payment\Payment;
 
 use Zend\Json\Json;
 
-use Aircode\Currency as ArmenioCurrency;
+use Armenio\Currency as ArmenioCurrency;
 
 
 $file = 'vendor/pagseguro/source/PagSeguroLibrary/PagSeguroLibrary.php';
