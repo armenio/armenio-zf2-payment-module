@@ -1,0 +1,27 @@
+{
+	"name": "armenio/armenio-payment",
+	"description": "Payment library",
+	"type": "library",
+	"keywords": [
+		"payment",
+		"helper",
+		"zf2",
+		"armenio"
+	],
+	"homepage": "https://github.com/armenio/armenio-payment",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Rafael Armênio",
+			"email": "rafael.armenio@gmail.com"
+		}
+	],
+	"require": {
+		"zendframework/zendframework": "2.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Aircode\\Payment\\": "src/"
+		}
+	},
+}
