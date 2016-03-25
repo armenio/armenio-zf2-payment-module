@@ -6,18 +6,10 @@ use Zend\Json\Json;
 
 use Armenio\Currency as ArmenioCurrency;
 
-
-$file = 'vendor/pagseguro/source/PagSeguroLibrary/PagSeguroLibrary.php';
-if( file_exists(sprintf('%s/../%s', ROOT_PATH, $file)) ){
-	require_once sprintf('%s/../%s', ROOT_PATH, $file);
-}else{
-	require_once sprintf('%s/%s', ROOT_PATH, $file);
-}
-
 /**
-* Correios
+* Pagseguro
 * 
-* Retrieves shipping cost from Correios
+* Processa pagamentos pelo Pagseguro
 */
 class Pagseguro extends Payment
 {	
