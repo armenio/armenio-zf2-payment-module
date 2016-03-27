@@ -4,7 +4,7 @@ use Armenio\Payment\Payment;
 
 use Zend\Json\Json;
 
-use Armenio\Currency as ArmenioCurrency;
+use Armenio\Currency\Currency as ArmenioCurrency;
 
 /**
 * Pagseguro
