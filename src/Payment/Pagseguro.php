@@ -56,7 +56,7 @@ class Pagseguro extends Payment
 			$this->$userParam = $options[$userParam];
 		}
 
-		$userParam = 'dataCliente';
+		$userParam = 'dataUsuario';
 		if( ! empty( $options[$userParam] ) ){
 			$this->$userParam = $options[$userParam];
 		}
@@ -94,12 +94,12 @@ class Pagseguro extends Payment
 
 		// customer information.
 		$paymentRequest->setSender(
-			$this->dataCliente['titulo'],
-			$this->dataCliente['email'],
-			mb_substr($this->dataCliente['telefone'], 1, 2),
-			preg_replace('/[^\d]/', '', mb_substr($this->dataCliente['telefone'], 5)),
-			$this->dataCliente['tipo'] == 'pf' ? 'CPF' : 'CNPJ',
-			$this->dataCliente['cpf_cnpj']
+			$this->dataUsuario['titulo'],
+			$this->dataUsuario['email'],
+			mb_substr($this->dataUsuario['telefone'], 1, 2),
+			preg_replace('/[^\d]/', '', mb_substr($this->dataUsuario['telefone'], 5)),
+			'CPF',
+			$this->dataUsuario['cpf']
 		);
 
 		$paymentRequest->setRedirectUrl($this->redirectUrl);
@@ -109,7 +109,7 @@ class Pagseguro extends Payment
 			// Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
 			$url = $paymentRequest->register(new \PagSeguroAccountCredentials($this->credentials['email'], $this->credentials['token']));
 
-			return sprintf('<a class="btn btn-info btn-fill btn-lg" href="%s" target="_blank">Pagar com PagSeguro</a>', $url);
+			return sprintf('<a class="btn btn-fill btn-lg btn-aircode btn-aircode-primary" href="%s" target="_blank">Pagar com PagSeguro</a>', $url);
 		} catch (\PagSeguroServiceException $e) {
 			return $e->getMessage();
 		} 
