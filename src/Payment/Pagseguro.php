@@ -1,6 +1,12 @@
 <?php
+/**
+ * Rafael Armenio <rafael.armenio@gmail.com>
+ *
+ * @link http://github.com/armenio for the source repository
+ */
+ 
 namespace Armenio\Payment\Payment;
-use Armenio\Payment\Payment;
+use Armenio\Payment\AbstractPayment;
 
 use Zend\Json\Json;
 
@@ -11,99 +17,108 @@ use Armenio\Currency\Currency as ArmenioCurrency;
 * 
 * Processa pagamentos pelo Pagseguro
 */
-class Pagseguro extends Payment
+class Pagseguro extends AbstractPayment
 {	
-	public $credentials = array(
-		'email' => '',
-		'token' => ''
+	protected $options = array(
+		'dataPedido' => array(),
+		'dataUsuario' => array(),
+		'redirectUrl' => '',
+		'notificationURL' => '',
 	);
 
-	/**
-	* Constructor
-	* 
-	* @param array $options
-	* @return __construct
-	*/
-	public function __construct($options = array())
+	protected $credentials = array(
+		'email' => '',
+		'token' => '',
+	);
+
+	public function setOptions($options = array())
 	{
-		$userParam = 'config';
-		if( ! empty( $options[$userParam] ) ){
-
-			try{
-				$config = Json::decode($options[$userParam], 1);
-
-				$this->credentials['email'] = $config['email'];
-				$this->credentials['token'] = $config['token'];
-
-				$isException = false;
-			} catch (\Zend\Json\Exception\RuntimeException $e) {
-				$isException = true;
-			} catch (\Zend\Json\Exception\RecursionException $e2) {
-				$isException = true;
-			} catch (\Zend\Json\Exception\InvalidArgumentException $e3) {
-				$isException = true;
-			} catch (\Zend\Json\Exception\BadMethodCallException $e4) {
-				$isException = true;
-			}
-
-			if( $isException === true ){
-				//código em caso de problemas no decode
+		foreach ( $options as $optionKey => $optionValue ) {
+			if( isset( $this->options[$optionKey] ) ){
+				$this->options[$optionKey] = $optionValue;
 			}
 		}
 
-		$userParam = 'dataPedido';
-		if( ! empty( $options[$userParam] ) ){
-			$this->$userParam = $options[$userParam];
+		return $this;
+	}
+
+	public function getOptions($option = null)
+	{
+		if( $option !== null ){
+			return $this->options[$option];
 		}
 
-		$userParam = 'dataUsuario';
-		if( ! empty( $options[$userParam] ) ){
-			$this->$userParam = $options[$userParam];
+		return $this->options;
+	}
+
+	public function setCredentials($jsonStringCredentials = '')
+	{
+		try{
+			$options = Json::decode($jsonStringCredentials, 1);
+			foreach ( $options as $optionKey => $optionValue ) {
+				if( isset( $this->credentials[$optionKey] ) ){
+					$this->credentials[$optionKey] = $optionValue;
+				}
+			}
+
+			$isException = false;
+		} catch (\Zend\Json\Exception\RuntimeException $e) {
+			$isException = true;
+		} catch (\Zend\Json\Exception\RecursionException $e2) {
+			$isException = true;
+		} catch (\Zend\Json\Exception\InvalidArgumentException $e3) {
+			$isException = true;
+		} catch (\Zend\Json\Exception\BadMethodCallException $e4) {
+			$isException = true;
 		}
 
-		$userParam = 'redirectUrl';
-		if( ! empty( $options[$userParam] ) ){
-			$this->$userParam = $options[$userParam];
+		if( $isException === true ){
+			//código em caso de problemas no decode
 		}
 
-		$userParam = 'notificationURL';
-		if( ! empty( $options[$userParam] ) ){
-			$this->$userParam = $options[$userParam];
+		return $this;
+	}
+
+	public function getCredentials($credential = null)
+	{
+		if( $credential !== null ){
+			return $this->credentials[$credential];
 		}
+
+		return $this->credentials;
 	}
 
 	public function button()
 	{
-
 		$paymentRequest = new \PagSeguroPaymentRequest();
 		$paymentRequest->setCurrency('BRL');
-		$paymentRequest->setReference($this->dataPedido['codigo']);
+		$paymentRequest->setReference($this->options['dataPedido']['codigo']);
 
 		
-		foreach ($this->dataPedido['ComponentProdutosDoPedido'] as $product) {
+		foreach ($this->options['dataPedido']['ComponentProdutosDoPedido'] as $product) {
 			$paymentRequest->addItem($product['component_produtos_id'], sprintf('%s %s', $product['ComponentProdutos']['titulo'], $product['ComponentProdutos']['chapeu']), $product['quantity'], $product['preco']);
 		}
 
-		if( $this->dataPedido['desconto'] > 0 ){
-			$paymentRequest->setExtraAmount($this->dataPedido['desconto']*-1);
+		if( $this->options['dataPedido']['desconto'] > 0 ){
+			$paymentRequest->setExtraAmount($this->options['dataPedido']['desconto']*-1);
 		}
 
-		if( $this->dataPedido['shipping_price'] > 0 ){
-			$paymentRequest->addItem('frete', sprintf('Frete por %s', $this->dataPedido['ComponentFormasDeEntrega']['titulo']), 1, $this->dataPedido['shipping_price']);
+		if( $this->options['dataPedido']['shipping_price'] > 0 ){
+			$paymentRequest->addItem('frete', sprintf('Frete por %s', $this->options['dataPedido']['ComponentFormasDeEntrega']['titulo']), 1, $this->options['dataPedido']['shipping_price']);
 		}
 
 		// customer information.
 		$paymentRequest->setSender(
-			$this->dataUsuario['titulo'],
-			$this->dataUsuario['email'],
-			mb_substr($this->dataUsuario['telefone'], 1, 2),
-			preg_replace('/[^\d]/', '', mb_substr($this->dataUsuario['telefone'], 5)),
+			$this->options['dataUsuario']['titulo'],
+			$this->options['dataUsuario']['email'],
+			mb_substr($this->options['dataUsuario']['telefone'], 1, 2),
+			preg_replace('/[^\d]/', '', mb_substr($this->options['dataUsuario']['telefone'], 5)),
 			'CPF',
-			$this->dataUsuario['cpf']
+			$this->options['dataUsuario']['cpf']
 		);
 
-		$paymentRequest->setRedirectUrl($this->redirectUrl);
-		$paymentRequest->addParameter('notificationURL', $this->notificationURL);
+		$paymentRequest->setRedirectUrl($this->options['redirectUrl']);
+		$paymentRequest->addParameter('notificationURL', $this->options['notificationURL']);
 
 		try{
 			// Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
