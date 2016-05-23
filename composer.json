@@ -20,12 +20,9 @@
 		"pagseguro/php": "@stable",
 		"zendframework/zendframework": "2.*"
 	},
-	"autoload": {
-		"psr-0": {
-			"Armenio\\Payment\\": "src"
-		},
-		"classmap": [
-			"Module.php"
-		]
-	}
+    "autoload": {
+        "psr-4": {
+            "Armenio\\Payment\\": "src/"
+        }
+    }
 }
