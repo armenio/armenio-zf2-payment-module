@@ -10,8 +10,6 @@ use Armenio\Payment\AbstractPayment;
 
 use Zend\Json\Json;
 
-use Armenio\Currency\Currency as ArmenioCurrency;
-
 /**
 * Pagseguro
 * 
