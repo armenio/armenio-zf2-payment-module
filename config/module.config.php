@@ -10,7 +10,7 @@
 return array(
     'service_manager' => array(
         'factories' => array(
-            'Armenio\Payment\Pagseguro' => 'Armenio\Payment\PagseguroServiceFactory',
+            'Armenio\Payment\Pagseguro\Pagseguro' => 'Armenio\Payment\Pagseguro\PagseguroServiceFactory',
         ),
     ),    
 );
