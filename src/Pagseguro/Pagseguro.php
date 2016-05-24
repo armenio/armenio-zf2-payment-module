@@ -5,7 +5,7 @@
  * @link http://github.com/armenio for the source repository
  */
  
-namespace Armenio\Payment;
+namespace Armenio\Payment\Pagseguro;
 use Armenio\Payment\AbstractPayment;
 
 use Zend\Json;
