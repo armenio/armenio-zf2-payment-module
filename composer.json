@@ -1,5 +1,5 @@
 {
-	"name": "armenio/armenio-payment",
+	"name": "armenio/armenio-zf2-payment-module",
 	"description": "Payment library",
 	"type": "library",
 	"keywords": [
@@ -8,7 +8,7 @@
 		"zf2",
 		"armenio"
 	],
-	"homepage": "https://github.com/armenio/armenio-payment",
+	"homepage": "https://github.com/armenio/armenio-zf2-payment-module",
 	"license": "MIT",
 	"authors": [
 		{
