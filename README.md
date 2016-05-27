@@ -1,1 +1,1 @@
-# armenio-payment
+# armenio-zf2-payment-module
