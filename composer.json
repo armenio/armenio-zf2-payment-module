@@ -1,6 +1,6 @@
 {
 	"name": "armenio/armenio-zf2-payment-module",
-	"description": "Payment library",
+	"description": "Payment Module for Zend Framework 2",
 	"type": "library",
 	"keywords": [
 		"payment",
