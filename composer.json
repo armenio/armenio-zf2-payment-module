@@ -17,7 +17,7 @@
 		}
 	],
 	"require": {
-		"pagseguro/php": "@stable",
+		"pagseguro/php": "2.7.1",
 		"zendframework/zendframework": "2.*"
 	},
     "autoload": {
