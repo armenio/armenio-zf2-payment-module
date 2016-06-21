@@ -17,19 +17,19 @@ use Zend\Json;
 */
 class Pagseguro extends AbstractPayment
 {	
-	protected $options = array(
-		'dataPedido' => array(),
-		'dataUsuario' => array(),
+	protected $options = [
+		'dataPedido' => [],
+		'dataUsuario' => [],
 		'redirectUrl' => '',
 		'notificationURL' => '',
-	);
+	];
 
-	protected $credentials = array(
+	protected $credentials = [
 		'email' => '',
 		'token' => '',
-	);
+	];
 
-	public function setOptions($options = array())
+	public function setOptions($options = [])
 	{
 		foreach ( $options as $optionKey => $optionValue ) {
 			if( isset( $this->options[$optionKey] ) ){
@@ -133,10 +133,10 @@ class Pagseguro extends AbstractPayment
 		try{
 			$transaction = \PagSeguroNotificationService::checkTransaction(new \PagSeguroAccountCredentials($this->credentials['email'], $this->credentials['token']), $notificationCode);
 
-			return array(
+			return [
 				'code' => $transaction->getCode(),
 				'reference' => $transaction->getReference()
-			);
+			];
 		} catch (\PagSeguroServiceException $e) {
 			return $e->getMessage();
 		} 
@@ -147,9 +147,9 @@ class Pagseguro extends AbstractPayment
 		try{
 			$transaction = \PagSeguroTransactionSearchService::searchByCode(new \PagSeguroAccountCredentials($this->credentials['email'], $this->credentials['token']), $code);
 
-			return array(
+			return [
 				'status' => $transaction->getStatus()->getTypeFromValue()
-			);
+			];
 		} catch (\PagSeguroServiceException $e) {
 			return $e->getMessage();
 		} 
