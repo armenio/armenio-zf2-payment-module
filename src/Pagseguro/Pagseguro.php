@@ -156,8 +156,8 @@ class Pagseguro extends AbstractPayment
             $this->options['user']['cpf']
         );
 
-        $paymentRequest->setRedirectUrl($this->options['redirectUrl']);
-        $paymentRequest->addParameter('notificationURL', $this->options['notificationURL']);
+        $paymentRequest->setRedirectURL($this->options['redirectUrl']);
+        $paymentRequest->setNotificationURL($this->options['notificationURL']);
 
         try {
             // Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
