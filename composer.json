@@ -17,12 +17,11 @@
 		}
 	],
 	"require": {
-		"pagseguro/php": "2.7.1",
-		"zendframework/zendframework": "2.*"
+		"pagseguro/php": "2.7.*"
 	},
     "autoload": {
-        "psr-4": {
-            "Armenio\\Payment\\": "src/"
-        }
-    }
+		"psr-4": {
+			"Armenio\\Payment\\": "src/"
+		}
+	}
 }
