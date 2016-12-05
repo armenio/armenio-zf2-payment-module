@@ -8,8 +8,9 @@
 namespace Armenio\Payment;
 
 /**
-* AbstractPayment
-*/
+ * Class AbstractPayment
+ * @package Armenio\Payment
+ */
 class AbstractPayment
 {
     
