@@ -63,32 +63,27 @@ class Pagseguro extends AbstractPayment
     }
 
     /**
-     * @param string $jsonStringCredentials
+     * @param string|array|null $options
      * @return $this
      */
-    public function setCredentials($jsonStringCredentials = '')
+    public function setCredentials($options = null)
     {
-        try {
-            $options = Json\Json::decode($jsonStringCredentials, 1);
-            foreach ($options as $optionKey => $optionValue) {
-                if (isset($this->credentials[$optionKey])) {
-                    $this->credentials[$optionKey] = $optionValue;
-                }
+        if (is_string($options)) {
+            try {
+                $options = Json\Json::decode($jsonStringOrArrayCredentials, 1);
+            } catch (Json\Exception\RuntimeException $e) {
+                $options = [];
+            } catch (Json\Exception\InvalidArgumentException $e2) {
+                $options = [];
+            } catch (Json\Exception\BadMethodCallException $e3) {
+                $options = [];
             }
-
-            $isException = false;
-        } catch (Json\Exception\RuntimeException $e) {
-            $isException = true;
-        } catch (Json\Exception\RecursionException $e2) {
-            $isException = true;
-        } catch (Json\Exception\InvalidArgumentException $e3) {
-            $isException = true;
-        } catch (Json\Exception\BadMethodCallException $e4) {
-            $isException = true;
         }
 
-        if ($isException === true) {
-            //código em caso de problemas no decode
+        foreach ($options as $optionKey => $optionValue) {
+            if (isset($this->credentials[$optionKey])) {
+                $this->credentials[$optionKey] = $optionValue;
+            }
         }
 
         return $this;
@@ -108,6 +103,7 @@ class Pagseguro extends AbstractPayment
     }
 
     /**
+     * @param string $label
      * @return string
      *
      * $this->options['purchase']['token']
@@ -127,7 +123,7 @@ class Pagseguro extends AbstractPayment
      * $this->options['user']['phone']
      * $this->options['user']['cpf']
      */
-    public function button()
+    public function button($label = 'Pagar com PagSeguro')
     {
         $paymentRequest = new \PagSeguroPaymentRequest();
         $paymentRequest->setCurrency('BRL');
@@ -163,7 +159,7 @@ class Pagseguro extends AbstractPayment
             // Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
             $url = $paymentRequest->register(new \PagSeguroAccountCredentials($this->credentials['email'], $this->credentials['token']));
 
-            return '<a class="btn btn-primary animated" href="' . $url . '" target="_blank">Pagar com PagSeguro</a>';
+            return '<a class="btn btn-primary animated" href="' . $url . '" target="_blank">' . $label . '</a>';
         } catch (\PagSeguroServiceException $e) {
             return $e->getMessage();
         }
@@ -180,7 +176,7 @@ class Pagseguro extends AbstractPayment
 
             return [
                 'code' => $transaction->getCode(),
-                'reference' => $transaction->getReference()
+                'reference' => $transaction->getReference(),
             ];
         } catch (\PagSeguroServiceException $e) {
             return $e->getMessage();
