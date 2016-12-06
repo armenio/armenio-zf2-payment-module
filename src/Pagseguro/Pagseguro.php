@@ -80,9 +80,9 @@ class Pagseguro extends AbstractPayment
             }
         }
 
-        foreach ($options as $optionKey => $optionValue) {
-            if (isset($this->credentials[$optionKey])) {
-                $this->credentials[$optionKey] = $optionValue;
+        foreach ($options as $key => $value) {
+            if (isset($this->credentials[$key])) {
+                $this->credentials[$key] = $value;
             }
         }
 
