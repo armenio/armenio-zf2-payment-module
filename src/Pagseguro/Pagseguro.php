@@ -70,7 +70,7 @@ class Pagseguro extends AbstractPayment
     {
         if (is_string($options)) {
             try {
-                $options = Json\Json::decode($jsonStringOrArrayCredentials, 1);
+                $options = Json\Json::decode($options, 1);
             } catch (Json\Exception\RuntimeException $e) {
                 $options = [];
             } catch (Json\Exception\InvalidArgumentException $e2) {
