@@ -50,7 +50,7 @@ class Cielo extends AbstractPayment
     /**
      * @var array
      */
-    protected $credentials = [
+    protected $configs = [
         'identity' => '',
         'credential' => '',
     ];
@@ -61,26 +61,26 @@ class Cielo extends AbstractPayment
     protected $devMode = true;
 
     /**
-     * @param null $credentials
+     * @param null $configs
      * @return $this
      */
-    public function setCredentials($credentials = null)
+    public function setConfigs($configs = null)
     {
-        if (is_string($credentials)) {
+        if (is_string($configs)) {
             try {
-                $credentials = Json\Json::decode($credentials, 1);
+                $configs = Json\Json::decode($configs, 1);
             } catch (Json\Exception\RuntimeException $e) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\InvalidArgumentException $e2) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\BadMethodCallException $e3) {
-                $credentials = [];
+                $configs = [];
             }
         }
 
-        foreach ($credentials as $key => $value) {
-            if (isset($this->credentials[$key])) {
-                $this->credentials[$key] = $value;
+        foreach ($configs as $key => $value) {
+            if (isset($this->configs[$key])) {
+                $this->configs[$key] = $value;
             }
         }
 
@@ -91,13 +91,13 @@ class Cielo extends AbstractPayment
      * @param null $credential
      * @return array|mixed
      */
-    public function getCredentials($credential = null)
+    public function getConfigs($credential = null)
     {
         if ($credential !== null) {
-            return $this->credentials[$credential];
+            return $this->configs[$credential];
         }
 
-        return $this->credentials;
+        return $this->configs;
     }
 
     /**
@@ -212,8 +212,8 @@ class Cielo extends AbstractPayment
         $requisicao->addAttribute('versao', '1.2.1');
 
         $dadosEc = $requisicao->addChild('dados-ec');
-        $dadosEc->addChild('numero', $this->credentials['identity']); //Número de afiliação da loja com a Cielo.
-        $dadosEc->addChild('chave', $this->credentials['credential']); //Chave de acesso da loja atribuída pela Cielo.
+        $dadosEc->addChild('numero', $this->configs['identity']); //Número de afiliação da loja com a Cielo.
+        $dadosEc->addChild('chave', $this->configs['credential']); //Chave de acesso da loja atribuída pela Cielo.
 
         $dadosPortador = $requisicao->addChild('dados-portador');
         $dadosPortador->addChild('numero', $this->card['number']); //Número do cartão.

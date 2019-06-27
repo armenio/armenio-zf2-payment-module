@@ -52,7 +52,7 @@ class Cielo2 extends AbstractPayment
     /**
      * @var array
      */
-    protected $credentials = [
+    protected $configs = [
         'identity' => '',
         'credential' => '',
     ];
@@ -63,26 +63,26 @@ class Cielo2 extends AbstractPayment
     protected $devMode = true;
 
     /**
-     * @param null $credentials
+     * @param null $configs
      * @return $this
      */
-    public function setCredentials($credentials = null)
+    public function setConfigs($configs = null)
     {
-        if (is_string($credentials)) {
+        if (is_string($configs)) {
             try {
-                $credentials = Json\Json::decode($credentials, 1);
+                $configs = Json\Json::decode($configs, 1);
             } catch (Json\Exception\RuntimeException $e) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\InvalidArgumentException $e2) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\BadMethodCallException $e3) {
-                $credentials = [];
+                $configs = [];
             }
         }
 
-        foreach ($credentials as $key => $value) {
-            if (isset($this->credentials[$key])) {
-                $this->credentials[$key] = $value;
+        foreach ($configs as $key => $value) {
+            if (isset($this->configs[$key])) {
+                $this->configs[$key] = $value;
             }
         }
 
@@ -93,13 +93,13 @@ class Cielo2 extends AbstractPayment
      * @param null $credential
      * @return array|mixed
      */
-    public function getCredentials($credential = null)
+    public function getConfigs($credential = null)
     {
         if ($credential !== null) {
-            return $this->credentials[$credential];
+            return $this->configs[$credential];
         }
 
-        return $this->credentials;
+        return $this->configs;
     }
 
     /**
@@ -212,7 +212,7 @@ class Cielo2 extends AbstractPayment
         $environment = $this->devMode ? Environment::sandbox() : Environment::production();
 
         // Merchant
-        $merchant = new Merchant($this->credentials['identity'], $this->credentials['credential']);
+        $merchant = new Merchant($this->configs['identity'], $this->configs['credential']);
 
         // Instância de Sale informando o ID do pedido na loja
         $sale = new Sale($this->purchase['token']);

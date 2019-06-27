@@ -29,7 +29,7 @@ class Pagseguro extends AbstractPayment
     /**
      * @var array
      */
-    protected $credentials = [
+    protected $configs = [
         'identity' => '',
         'credential' => '',
     ];
@@ -63,26 +63,26 @@ class Pagseguro extends AbstractPayment
     }
 
     /**
-     * @param null $credentials
+     * @param null $configs
      * @return $this
      */
-    public function setCredentials($credentials = null)
+    public function setConfigs($configs = null)
     {
-        if (is_string($credentials)) {
+        if (is_string($configs)) {
             try {
-                $credentials = Json\Json::decode($credentials, 1);
+                $configs = Json\Json::decode($configs, 1);
             } catch (Json\Exception\RuntimeException $e) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\InvalidArgumentException $e2) {
-                $credentials = [];
+                $configs = [];
             } catch (Json\Exception\BadMethodCallException $e3) {
-                $credentials = [];
+                $configs = [];
             }
         }
 
-        foreach ($credentials as $key => $value) {
-            if (isset($this->credentials[$key])) {
-                $this->credentials[$key] = $value;
+        foreach ($configs as $key => $value) {
+            if (isset($this->configs[$key])) {
+                $this->configs[$key] = $value;
             }
         }
 
@@ -93,13 +93,13 @@ class Pagseguro extends AbstractPayment
      * @param null $credential
      * @return array|mixed
      */
-    public function getCredentials($credential = null)
+    public function getConfigs($credential = null)
     {
         if ($credential !== null) {
-            return $this->credentials[$credential];
+            return $this->configs[$credential];
         }
 
-        return $this->credentials;
+        return $this->configs;
     }
 
     /**
@@ -157,7 +157,7 @@ class Pagseguro extends AbstractPayment
 
         try {
             // Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
-            $url = $paymentRequest->register(new \PagSeguroAccountCredentials($this->credentials['identity'], $this->credentials['credential']));
+            $url = $paymentRequest->register(new \PagSeguroAccountCredentials($this->configs['identity'], $this->configs['credential']));
 
             return '<a class="btn btn-primary animated" href="' . $url . '" target="_blank">' . $label . '</a>';
         } catch (\PagSeguroServiceException $e) {
@@ -172,7 +172,7 @@ class Pagseguro extends AbstractPayment
     public function check($notificationCode)
     {
         try {
-            $transaction = \PagSeguroNotificationService::checkTransaction(new \PagSeguroAccountCredentials($this->credentials['identity'], $this->credentials['credential']), $notificationCode);
+            $transaction = \PagSeguroNotificationService::checkTransaction(new \PagSeguroAccountCredentials($this->configs['identity'], $this->configs['credential']), $notificationCode);
 
             return [
                 'code' => $transaction->getCode(),
@@ -190,7 +190,7 @@ class Pagseguro extends AbstractPayment
     public function search($code)
     {
         try {
-            $transaction = \PagSeguroTransactionSearchService::searchByCode(new \PagSeguroAccountCredentials($this->credentials['identity'], $this->credentials['credential']), $code);
+            $transaction = \PagSeguroTransactionSearchService::searchByCode(new \PagSeguroAccountCredentials($this->configs['identity'], $this->configs['credential']), $code);
 
             return [
                 'status' => $transaction->getStatus()->getTypeFromValue()
