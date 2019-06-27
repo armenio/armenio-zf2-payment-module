@@ -123,7 +123,7 @@ class Pagseguro extends AbstractPayment
      * $this->options['user']['phone']
      * $this->options['user']['cpf']
      */
-    public function button($label = 'Pagar com PagSeguro')
+    public function callback()
     {
         $paymentRequest = new \PagSeguroPaymentRequest();
         $paymentRequest->setCurrency('BRL');
@@ -159,10 +159,17 @@ class Pagseguro extends AbstractPayment
             // Register this payment request in PagSeguro to obtain the payment URL to redirect your customer.
             $url = $paymentRequest->register(new \PagSeguroAccountCredentials($this->configs['identity'], $this->configs['credential']));
 
-            return '<a class="btn btn-primary animated" href="' . $url . '" target="_blank">' . $label . '</a>';
+            $result = [
+                'url' => $url,
+            ];
         } catch (\PagSeguroServiceException $e) {
-            return $e->getMessage();
+            $result = [
+                'error' => 'Ocorreu um problema durante a requisição.',
+                'message' => $e->getMessage(),
+            ];
         }
+
+        return $result;
     }
 
     /**
@@ -198,13 +205,5 @@ class Pagseguro extends AbstractPayment
         } catch (\PagSeguroServiceException $e) {
             return $e->getMessage();
         }
-    }
-
-    /**
-     * @return bool
-     */
-    public function callback()
-    {
-        return true;
     }
 }
