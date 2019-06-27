@@ -5,7 +5,7 @@
  * @link http://github.com/armenio for the source repository
  */
 
-namespace Armenio\Payment\CreditCard;
+namespace Armenio\Payment\Boleto;
 
 use Armenio\Payment\AbstractPayment;
 use Cielo\API30\Ecommerce\CieloEcommerce;
@@ -18,7 +18,7 @@ use Zend\Json;
 
 /**
  * Class Cielo2
- * @package Armenio\Payment\CreditCard
+ * @package Armenio\Payment\Boleto
  */
 class Cielo2 extends AbstractPayment
 {
@@ -33,20 +33,23 @@ class Cielo2 extends AbstractPayment
     /**
      * @var array
      */
-    protected $card = [
-        'number' => 0,
-        'year' => 0,
-        'month' => 0,
-        'security' => 0,
+    protected $customer = [
         'name' => '',
-        'flag' => '',
+        'cpf' => '',
+        'addressZipCode' => '',
+        'addressUf' => '',
+        'addressCity' => '',
+        'addressNeighborhood' => '',
+        'addressStreet' => '',
+        'addressNumberComplement' => '',
     ];
 
     /**
      * @var array
      */
-    protected $options = [
-        'installments' => 1,
+    protected $assignor = [
+        'address' => '',
+        'name' => '',
     ];
 
     /**
@@ -55,6 +58,10 @@ class Cielo2 extends AbstractPayment
     protected $credentials = [
         'identity' => '',
         'credential' => '',
+        'provider' => '',
+        'nossoNumero' => '',
+        'demonstrative' => '',
+        'instructions' => '',
     ];
 
     /**
@@ -131,14 +138,14 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
-     * @param array $card
+     * @param array $customer
      * @return $this
      */
-    public function setCard($card = [])
+    public function setCustomer($customer = [])
     {
-        foreach ($card as $key => $value) {
-            if (isset($this->card[$key])) {
-                $this->card[$key] = $value;
+        foreach ($customer as $key => $value) {
+            if (isset($this->customer[$key])) {
+                $this->customer[$key] = $value;
             }
         }
 
@@ -149,24 +156,24 @@ class Cielo2 extends AbstractPayment
      * @param null $key
      * @return array|mixed
      */
-    public function getCard($key = null)
+    public function getCustomer($key = null)
     {
         if ($key !== null) {
-            return $this->card[$key];
+            return $this->customer[$key];
         }
 
-        return $this->card;
+        return $this->customer;
     }
 
     /**
-     * @param array $options
+     * @param array $assignor
      * @return $this
      */
-    public function setOptions($options = [])
+    public function setAssignor($assignor = [])
     {
-        foreach ($options as $optionKey => $optionValue) {
-            if (isset($this->options[$optionKey])) {
-                $this->options[$optionKey] = $optionValue;
+        foreach ($assignor as $key => $value) {
+            if (isset($this->assignor[$key])) {
+                $this->assignor[$key] = $value;
             }
         }
 
@@ -174,16 +181,16 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
-     * @param null $option
+     * @param null $key
      * @return array|mixed
      */
-    public function getOptions($option = null)
+    public function getAssignor($key = null)
     {
-        if ($option !== null) {
-            return $this->options[$option];
+        if ($key !== null) {
+            return $this->assignor[$key];
         }
 
-        return $this->options;
+        return $this->assignor;
     }
 
     /**
@@ -218,18 +225,30 @@ class Cielo2 extends AbstractPayment
         $sale = new Sale($this->purchase['token']);
 
         // Instância de Customer informando o nome do cliente
-        //$customer = $sale->customer($this->card['name']);
+        $sale->customer($this->customer['name'])
+            ->setIdentity($this->customer['cpf'])
+            ->setIdentityType('CPF')
+            ->address()->setZipCode($this->customer['addressZipCode'])
+            ->setCountry('BRA')
+            ->setState($this->customer['addressUf'])
+            ->setCity($this->customer['addressCity'])
+            ->setDistrict($this->customer['addressNeighborhood'])
+            ->setStreet($this->customer['addressStreet'])
+            ->setNumber($this->customer['addressNumberComplement']);
 
         // Instância de Payment informando o valor do pagamento
-        $payment = $sale->payment($this->purchase['total'], $this->options['installments']);
-        $payment->setCapture(true);
+        $payment = $sale->payment($this->purchase['total']);
 
-        // Instância de Credit Card utilizando os dados de teste
-        $payment->setType(Payment::PAYMENTTYPE_CREDITCARD);
-        $creditCard = $payment->creditCard($this->card['security'], ucfirst($this->card['flag']));
-        $creditCard->setExpirationDate($this->card['month'] . '/' . $this->card['year'])
-            ->setCardNumber($this->card['number'])
-            ->setHolder($this->card['name']);
+        // Instância do boleto
+        $payment->setType(Payment::PAYMENTTYPE_BOLETO)
+            ->setProvider($this->credentials['provider'])
+            ->setAddress($this->assignor['address'])
+            //->setBoletoNumber($this->credentials['numer'])
+            ->setAssignor($this->assignor['name'])
+            ->setDemonstrative($this->credentials['demonstrative'])
+            ->setExpirationDate(date('d/m/Y', strtotime('+1 day')))
+            ->setIdentification($this->purchase['token'])
+            ->setInstructions($this->credentials['instructions']);
 
         // Crie o pagamento na Cielo
         try {
@@ -239,21 +258,14 @@ class Cielo2 extends AbstractPayment
             $status = (int)$response->getPayment()->getStatus();
 
             $result = [
-                'ProofOfSale' => $response->getPayment()->getProofOfSale(),
-                'Tid' => $response->getPayment()->getTid(),
-                'AuthorizationCode' => $response->getPayment()->getAuthorizationCode(),
-                'SoftDescriptor' => $response->getPayment()->getSoftDescriptor(),
                 'PaymentId' => $response->getPayment()->getPaymentId(),
-                //'ECI' => $response->getPayment()->getECI(),
-                'Status' => $status,
-                'ReturnCode' => $response->getPayment()->getReturnCode(),
-                'ReturnMessage' => $response->getPayment()->getReturnMessage(),
+                'url' => $sale->getPayment()->getUrl(),
                 'cieloResponse' => $response,
             ];
 
-            if ($status !== 2) {
+            if ($status !== 1) {
                 $result += [
-                    'error' => 'Pagamento não autorizado pela operadora do cartão.',
+                    'error' => 'Boleto não gerado pelo banco.',
                     'message' => 'Não Autorizado',
                     'status' => $status,
                 ];
