@@ -257,10 +257,6 @@ class Cielo2 extends AbstractPayment
                     'message' => 'Não Autorizado',
                     'status' => $status,
                 ];
-            } elseif ($this->devMode) {
-                $result += [
-                    'error' => 'devMode: Ok.',
-                ];
             }
         } catch (CieloRequestException $e) {
             $result = [
