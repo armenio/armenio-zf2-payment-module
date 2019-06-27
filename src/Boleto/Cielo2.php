@@ -259,7 +259,7 @@ class Cielo2 extends AbstractPayment
 
             $result = [
                 'PaymentId' => $response->getPayment()->getPaymentId(),
-                'url' => $sale->getPayment()->getUrl(),
+                'url' => $response->getPayment()->getUrl(),
                 'cieloResponse' => $response,
             ];
 
@@ -271,7 +271,7 @@ class Cielo2 extends AbstractPayment
                 ];
             } elseif ($this->devMode) {
                 $result += [
-                    'error' => $response->getPayment()->getReturnMessage(),
+                    'error' => 'devMode: Ok.',
                 ];
             }
         } catch (CieloRequestException $e) {
