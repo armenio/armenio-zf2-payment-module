@@ -36,12 +36,14 @@ class Cielo2 extends AbstractPayment
     protected $customer = [
         'name' => '',
         'cpf' => '',
-        'addressZipCode' => '',
-        'addressUf' => '',
-        'addressCity' => '',
-        'addressNeighborhood' => '',
-        'addressStreet' => '',
-        'addressNumberComplement' => '',
+        'address' => [
+            'zip_code' => '',
+            'uf' => '',
+            'city' => '',
+            'neighborhood' => '',
+            'street' => '',
+            'number_complement' => '',
+        ],
     ];
 
     /**
@@ -59,7 +61,7 @@ class Cielo2 extends AbstractPayment
         'identity' => '',
         'credential' => '',
         'provider' => '',
-        'nossoNumero' => '',
+        'nosso_numero' => '',
         'demonstrative' => '',
         'instructions' => '',
     ];
@@ -228,13 +230,13 @@ class Cielo2 extends AbstractPayment
         $sale->customer($this->customer['name'])
             ->setIdentity($this->customer['cpf'])
             ->setIdentityType('CPF')
-            ->address()->setZipCode($this->customer['addressZipCode'])
+            ->address()->setZipCode($this->customer['address']['zip_code'])
             ->setCountry('BRA')
-            ->setState($this->customer['addressUf'])
-            ->setCity($this->customer['addressCity'])
-            ->setDistrict($this->customer['addressNeighborhood'])
-            ->setStreet($this->customer['addressStreet'])
-            ->setNumber($this->customer['addressNumberComplement']);
+            ->setState($this->customer['address']['uf'])
+            ->setCity($this->customer['address']['city'])
+            ->setDistrict($this->customer['address']['neighborhood'])
+            ->setStreet($this->customer['address']['street'])
+            ->setNumber($this->customer['address']['number_complement']);
 
         // Instância de Payment informando o valor do pagamento
         $payment = $sale->payment($this->purchase['total']);
