@@ -40,9 +40,11 @@ class Pagseguro extends AbstractPayment
      */
     public function setOptions($options = [])
     {
-        foreach ($options as $optionKey => $optionValue) {
-            if (isset($this->options[$optionKey])) {
-                $this->options[$optionKey] = $optionValue;
+        if (is_array($options) && !empty($options)) {
+            foreach ($options as $optionKey => $optionValue) {
+                if (isset($this->options[$optionKey])) {
+                    $this->options[$optionKey] = $optionValue;
+                }
             }
         }
 
@@ -63,26 +65,30 @@ class Pagseguro extends AbstractPayment
     }
 
     /**
-     * @param null $configs
+     * @param string|array $configs
      * @return $this
      */
-    public function setConfigs($configs = null)
+    public function setConfigs($configs)
     {
         if (is_string($configs)) {
             try {
                 $configs = Json\Json::decode($configs, 1);
+            } catch (Json\Exception\RecursionException $e2) {
+
             } catch (Json\Exception\RuntimeException $e) {
-                $configs = [];
-            } catch (Json\Exception\InvalidArgumentException $e2) {
-                $configs = [];
-            } catch (Json\Exception\BadMethodCallException $e3) {
-                $configs = [];
+
+            } catch (Json\Exception\InvalidArgumentException $e3) {
+
+            } catch (Json\Exception\BadMethodCallException $e4) {
+
             }
         }
 
-        foreach ($configs as $key => $value) {
-            if (isset($this->configs[$key])) {
-                $this->configs[$key] = $value;
+        if (is_array($configs) && !empty($configs)) {
+            foreach ($configs as $key => $value) {
+                if (isset($this->configs[$key])) {
+                    $this->configs[$key] = $value;
+                }
             }
         }
 
@@ -90,13 +96,13 @@ class Pagseguro extends AbstractPayment
     }
 
     /**
-     * @param null $credential
+     * @param null $config
      * @return array|mixed
      */
-    public function getConfigs($credential = null)
+    public function getConfigs($config = null)
     {
-        if ($credential !== null) {
-            return $this->configs[$credential];
+        if ($config !== null) {
+            return $this->configs[$config];
         }
 
         return $this->configs;
@@ -104,7 +110,7 @@ class Pagseguro extends AbstractPayment
 
     /**
      * @param string $label
-     * @return string
+     * @return array
      *
      * $this->options['purchase']['token']
      *
@@ -175,6 +181,7 @@ class Pagseguro extends AbstractPayment
     /**
      * @param $notificationCode
      * @return array|string
+     * @throws \Exception
      */
     public function check($notificationCode)
     {
@@ -193,6 +200,7 @@ class Pagseguro extends AbstractPayment
     /**
      * @param $code
      * @return array|string
+     * @throws \Exception
      */
     public function search($code)
     {

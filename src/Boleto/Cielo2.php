@@ -72,26 +72,30 @@ class Cielo2 extends AbstractPayment
     protected $devMode = true;
 
     /**
-     * @param null $configs
+     * @param string|array $configs
      * @return $this
      */
-    public function setConfigs($configs = null)
+    public function setConfigs($configs)
     {
         if (is_string($configs)) {
             try {
                 $configs = Json\Json::decode($configs, 1);
+            } catch (Json\Exception\RecursionException $e2) {
+
             } catch (Json\Exception\RuntimeException $e) {
-                $configs = [];
-            } catch (Json\Exception\InvalidArgumentException $e2) {
-                $configs = [];
-            } catch (Json\Exception\BadMethodCallException $e3) {
-                $configs = [];
+
+            } catch (Json\Exception\InvalidArgumentException $e3) {
+
+            } catch (Json\Exception\BadMethodCallException $e4) {
+
             }
         }
 
-        foreach ($configs as $key => $value) {
-            if (isset($this->configs[$key])) {
-                $this->configs[$key] = $value;
+        if (is_array($configs) && !empty($configs)) {
+            foreach ($configs as $key => $value) {
+                if (isset($this->configs[$key])) {
+                    $this->configs[$key] = $value;
+                }
             }
         }
 
@@ -99,13 +103,13 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
-     * @param null $credential
+     * @param null $config
      * @return array|mixed
      */
-    public function getConfigs($credential = null)
+    public function getConfigs($config = null)
     {
-        if ($credential !== null) {
-            return $this->configs[$credential];
+        if ($config !== null) {
+            return $this->configs[$config];
         }
 
         return $this->configs;

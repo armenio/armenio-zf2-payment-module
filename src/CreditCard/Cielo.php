@@ -61,26 +61,30 @@ class Cielo extends AbstractPayment
     protected $devMode = true;
 
     /**
-     * @param null $configs
+     * @param string|array $configs
      * @return $this
      */
-    public function setConfigs($configs = null)
+    public function setConfigs($configs)
     {
         if (is_string($configs)) {
             try {
                 $configs = Json\Json::decode($configs, 1);
+            } catch (Json\Exception\RecursionException $e2) {
+
             } catch (Json\Exception\RuntimeException $e) {
-                $configs = [];
-            } catch (Json\Exception\InvalidArgumentException $e2) {
-                $configs = [];
-            } catch (Json\Exception\BadMethodCallException $e3) {
-                $configs = [];
+
+            } catch (Json\Exception\InvalidArgumentException $e3) {
+
+            } catch (Json\Exception\BadMethodCallException $e4) {
+
             }
         }
 
-        foreach ($configs as $key => $value) {
-            if (isset($this->configs[$key])) {
-                $this->configs[$key] = $value;
+        if (is_array($configs) && !empty($configs)) {
+            foreach ($configs as $key => $value) {
+                if (isset($this->configs[$key])) {
+                    $this->configs[$key] = $value;
+                }
             }
         }
 
@@ -88,13 +92,13 @@ class Cielo extends AbstractPayment
     }
 
     /**
-     * @param null $credential
+     * @param null $config
      * @return array|mixed
      */
-    public function getConfigs($credential = null)
+    public function getConfigs($config = null)
     {
-        if ($credential !== null) {
-            return $this->configs[$credential];
+        if ($config !== null) {
+            return $this->configs[$config];
         }
 
         return $this->configs;
@@ -162,9 +166,11 @@ class Cielo extends AbstractPayment
      */
     public function setOptions($options = [])
     {
-        foreach ($options as $optionKey => $optionValue) {
-            if (isset($this->options[$optionKey])) {
-                $this->options[$optionKey] = $optionValue;
+        if (is_array($options) && !empty($options)) {
+            foreach ($options as $optionKey => $optionValue) {
+                if (isset($this->options[$optionKey])) {
+                    $this->options[$optionKey] = $optionValue;
+                }
             }
         }
 
@@ -278,24 +284,24 @@ class Cielo extends AbstractPayment
 
         $objSimpleXMLElement = new SimpleXMLElement($body);
 
-        if(isset($objSimpleXMLElement->status) && (int) $objSimpleXMLElement->status === 6){
+        if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 6) {
             $result = [
-                'tid' => (string) $objSimpleXMLElement->tid,
-                'pan' => (string) $objSimpleXMLElement->pan,
-                'status' => (int) $objSimpleXMLElement->status,
+                'tid' => (string)$objSimpleXMLElement->tid,
+                'pan' => (string)$objSimpleXMLElement->pan,
+                'status' => (int)$objSimpleXMLElement->status,
                 'request' => $xml,
                 'response' => utf8_encode($body),
             ];
-        }else{
+        } else {
             $error = 'Ocorreu um problema durante a requisição.';
 
-            if(isset($objSimpleXMLElement->status) && (int) $objSimpleXMLElement->status === 5){
+            if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 5) {
                 $error = 'Pagamento não autorizado pela operadora do cartão.';
             };
 
             $result = [
                 'error' => $error,
-                'message' => (string) $objSimpleXMLElement->mensagem,
+                'message' => (string)$objSimpleXMLElement->mensagem,
                 'request' => $xml,
                 'response' => utf8_encode($body),
             ];
