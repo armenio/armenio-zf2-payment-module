@@ -69,13 +69,13 @@ class Cielo extends AbstractPayment
         if (is_string($configs)) {
             try {
                 $configs = Json\Json::decode($configs, 1);
-            } catch (Json\Exception\RecursionException $e2) {
+            } catch (Json\Exception\RecursionException $e) {
 
             } catch (Json\Exception\RuntimeException $e) {
 
-            } catch (Json\Exception\InvalidArgumentException $e3) {
+            } catch (Json\Exception\InvalidArgumentException $e) {
 
-            } catch (Json\Exception\BadMethodCallException $e4) {
+            } catch (Json\Exception\BadMethodCallException $e) {
 
             }
         }
@@ -274,36 +274,49 @@ class Cielo extends AbstractPayment
         $client->setOptions([
             'curloptions' => [
                 CURLOPT_HEADER => false,
+                CURLOPT_CONNECTTIMEOUT => 0,
+                CURLOPT_TIMEOUT => 60,
             ]
         ]);
+
         $client->setParameterPost($params);
 
-        $response = $client->send();
+        try {
+            $response = $client->send();
 
-        $body = $response->getBody();
+            $body = $response->getBody();
 
-        $objSimpleXMLElement = new SimpleXMLElement($body);
+            $objSimpleXMLElement = new SimpleXMLElement($body);
 
-        if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 6) {
+            if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 6) {
+                $result = [
+                    'tid' => (string)$objSimpleXMLElement->tid,
+                    'pan' => (string)$objSimpleXMLElement->pan,
+                    'status' => (int)$objSimpleXMLElement->status,
+                    'request' => $xml,
+                    'response' => utf8_encode($body),
+                ];
+            } else {
+                $error = 'Ocorreu um problema durante a requisição.';
+
+                if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 5) {
+                    $error = 'Pagamento não autorizado pela operadora do cartão.';
+                };
+
+                $result = [
+                    'error' => $error,
+                    'message' => (string)$objSimpleXMLElement->mensagem,
+                    'request' => $xml,
+                    'response' => utf8_encode($body),
+                ];
+            }
+        } catch (Client\Adapter\Exception\TimeoutException $e) {
             $result = [
-                'tid' => (string)$objSimpleXMLElement->tid,
-                'pan' => (string)$objSimpleXMLElement->pan,
-                'status' => (int)$objSimpleXMLElement->status,
-                'request' => $xml,
-                'response' => utf8_encode($body),
+                'error' => $e->getMessage(),
             ];
-        } else {
-            $error = 'Ocorreu um problema durante a requisição.';
-
-            if (isset($objSimpleXMLElement->status) && (int)$objSimpleXMLElement->status === 5) {
-                $error = 'Pagamento não autorizado pela operadora do cartão.';
-            };
-
+        } catch (Client\Adapter\Exception\RuntimeException $e) {
             $result = [
-                'error' => $error,
-                'message' => (string)$objSimpleXMLElement->mensagem,
-                'request' => $xml,
-                'response' => utf8_encode($body),
+                'error' => $e->getMessage(),
             ];
         }
 

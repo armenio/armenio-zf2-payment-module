@@ -73,13 +73,13 @@ class Pagseguro extends AbstractPayment
         if (is_string($configs)) {
             try {
                 $configs = Json\Json::decode($configs, 1);
-            } catch (Json\Exception\RecursionException $e2) {
+            } catch (Json\Exception\RecursionException $e) {
 
             } catch (Json\Exception\RuntimeException $e) {
 
-            } catch (Json\Exception\InvalidArgumentException $e3) {
+            } catch (Json\Exception\InvalidArgumentException $e) {
 
-            } catch (Json\Exception\BadMethodCallException $e4) {
+            } catch (Json\Exception\BadMethodCallException $e) {
 
             }
         }
