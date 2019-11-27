@@ -33,6 +33,22 @@ class Cielo2 extends AbstractPayment
     /**
      * @var array
      */
+    protected $customer = [
+        'name' => '',
+        'cpf' => '',
+        'address' => [
+            'zip_code' => '',
+            'uf' => '',
+            'city' => '',
+            'neighborhood' => '',
+            'street' => '',
+            'number_complement' => '',
+        ],
+    ];
+
+    /**
+     * @var array
+     */
     protected $card = [
         'number' => 0,
         'year' => 0,
@@ -135,6 +151,34 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
+     * @param array $customer
+     * @return $this
+     */
+    public function setCustomer($customer = [])
+    {
+        foreach ($customer as $key => $value) {
+            if (isset($this->customer[$key])) {
+                $this->customer[$key] = $value;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param null $key
+     * @return array|mixed
+     */
+    public function getCustomer($key = null)
+    {
+        if ($key !== null) {
+            return $this->customer[$key];
+        }
+
+        return $this->customer;
+    }
+
+    /**
      * @param array $card
      * @return $this
      */
@@ -224,7 +268,16 @@ class Cielo2 extends AbstractPayment
         $sale = new Sale($this->purchase['token']);
 
         // Instância de Customer informando o nome do cliente
-        //$customer = $sale->customer($this->card['name']);
+        $sale->customer($this->customer['name'])
+            ->setIdentity($this->customer['cpf'])
+            ->setIdentityType('CPF')
+            ->address()->setZipCode($this->customer['address']['zip_code'])
+            ->setCountry('BRA')
+            ->setState($this->customer['address']['uf'])
+            ->setCity($this->customer['address']['city'])
+            ->setDistrict($this->customer['address']['neighborhood'])
+            ->setStreet($this->customer['address']['street'])
+            ->setNumber($this->customer['address']['number_complement']);
 
         // Instância de Payment informando o valor do pagamento
         $payment = $sale->payment($this->purchase['total'], $this->options['installments']);
