@@ -2,7 +2,7 @@
 /**
  * Rafael Armenio <rafael.armenio@gmail.com>
  *
- * @link http://github.com/armenio for the source repository
+ * @link http://github.com/armenio
  */
 
 namespace Armenio\Payment\CreditCard;
@@ -79,6 +79,19 @@ class Cielo2 extends AbstractPayment
     protected $devMode = true;
 
     /**
+     * @param null $config
+     * @return array|mixed
+     */
+    public function getConfigs($config = null)
+    {
+        if ($config !== null) {
+            return $this->configs[$config];
+        }
+
+        return $this->configs;
+    }
+
+    /**
      * @param string|array $configs
      * @return $this
      */
@@ -110,16 +123,16 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
-     * @param null $config
+     * @param null $key
      * @return array|mixed
      */
-    public function getConfigs($config = null)
+    public function getPurchase($key = null)
     {
-        if ($config !== null) {
-            return $this->configs[$config];
+        if ($key !== null) {
+            return $this->purchase[$key];
         }
 
-        return $this->configs;
+        return $this->purchase;
     }
 
     /**
@@ -141,13 +154,13 @@ class Cielo2 extends AbstractPayment
      * @param null $key
      * @return array|mixed
      */
-    public function getPurchase($key = null)
+    public function getCustomer($key = null)
     {
         if ($key !== null) {
-            return $this->purchase[$key];
+            return $this->customer[$key];
         }
 
-        return $this->purchase;
+        return $this->customer;
     }
 
     /**
@@ -169,13 +182,13 @@ class Cielo2 extends AbstractPayment
      * @param null $key
      * @return array|mixed
      */
-    public function getCustomer($key = null)
+    public function getCard($key = null)
     {
         if ($key !== null) {
-            return $this->customer[$key];
+            return $this->card[$key];
         }
 
-        return $this->customer;
+        return $this->card;
     }
 
     /**
@@ -187,36 +200,6 @@ class Cielo2 extends AbstractPayment
         foreach ($card as $key => $value) {
             if (isset($this->card[$key])) {
                 $this->card[$key] = $value;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param null $key
-     * @return array|mixed
-     */
-    public function getCard($key = null)
-    {
-        if ($key !== null) {
-            return $this->card[$key];
-        }
-
-        return $this->card;
-    }
-
-    /**
-     * @param array $options
-     * @return $this
-     */
-    public function setOptions($options = [])
-    {
-        if (is_array($options) && !empty($options)) {
-            foreach ($options as $optionKey => $optionValue) {
-                if (isset($this->options[$optionKey])) {
-                    $this->options[$optionKey] = $optionValue;
-                }
             }
         }
 
@@ -237,12 +220,19 @@ class Cielo2 extends AbstractPayment
     }
 
     /**
-     * @param bool $devMode
+     * @param array $options
      * @return $this
      */
-    public function setDevMode($devMode = true)
+    public function setOptions($options = [])
     {
-        $this->devMode = $devMode;
+        if (is_array($options) && !empty($options)) {
+            foreach ($options as $optionKey => $optionValue) {
+                if (isset($this->options[$optionKey])) {
+                    $this->options[$optionKey] = $optionValue;
+                }
+            }
+        }
+
         return $this;
     }
 
@@ -252,6 +242,16 @@ class Cielo2 extends AbstractPayment
     public function getDevMode()
     {
         return $this->devMode;
+    }
+
+    /**
+     * @param bool $devMode
+     * @return $this
+     */
+    public function setDevMode($devMode = true)
+    {
+        $this->devMode = $devMode;
+        return $this;
     }
 
     /**
@@ -318,9 +318,13 @@ class Cielo2 extends AbstractPayment
                 ];
             }
         } catch (CieloRequestException $e) {
+            $cieloError = $e->getCieloError();
+
+            $message = is_object($cieloError) && method_exists($cieloError, 'getCode') ? sprintf('%s - %s', $cieloError->getCode(), $cieloError->getMessage()) : 'Pode ser um erro de configuração.';
+
             $result = [
                 'error' => 'Ocorreu um problema durante a requisição.',
-                'message' => $e->getCieloError()->getMessage(),
+                'message' => $message,
             ];
         }
 
