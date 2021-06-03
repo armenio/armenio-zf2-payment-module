@@ -278,7 +278,6 @@ class Cielo2 extends AbstractPayment
                 return mb_strtolower($bin['Provider']);
             }
         } catch (\Exception $e) {
-            echo $e->getMessage();
         }
 
         return parent::getCardBrand($cardNumber);
@@ -316,7 +315,7 @@ class Cielo2 extends AbstractPayment
 
         // Instância de Credit Card utilizando os dados de teste
         $payment->setType(Payment::PAYMENTTYPE_CREDITCARD);
-        $creditCard = $payment->creditCard($this->card['security'], mb_ucfirst($this->card['flag']));
+        $creditCard = $payment->creditCard($this->card['security'], ucfirst($this->card['flag']));
         $creditCard->setExpirationDate($this->card['month'] . '/' . $this->card['year'])
             ->setCardNumber($this->card['number'])
             ->setHolder($this->card['name']);
