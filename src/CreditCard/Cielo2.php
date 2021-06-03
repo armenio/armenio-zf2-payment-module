@@ -8,16 +8,17 @@
 namespace Armenio\Payment\CreditCard;
 
 use Armenio\Payment\AbstractPayment;
+use Armenio\Payment\CreditCard\Cielo2\CardBinRequest;
 use Cielo\API30\Ecommerce\CieloEcommerce;
 use Cielo\API30\Ecommerce\Environment;
 use Cielo\API30\Ecommerce\Payment;
-use Cielo\API30\Ecommerce\Request\CieloRequestException;
 use Cielo\API30\Ecommerce\Sale;
 use Cielo\API30\Merchant;
-use Zend\Json;
+use Zend\Json\Json;
 
 /**
  * Class Cielo2
+ *
  * @package Armenio\Payment\CreditCard
  */
 class Cielo2 extends AbstractPayment
@@ -80,6 +81,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param null $config
+     *
      * @return array|mixed
      */
     public function getConfigs($config = null)
@@ -93,25 +95,19 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param string|array $configs
+     *
      * @return $this
      */
     public function setConfigs($configs)
     {
         if (is_string($configs)) {
             try {
-                $configs = Json\Json::decode($configs, 1);
-            } catch (Json\Exception\RecursionException $e) {
-
-            } catch (Json\Exception\RuntimeException $e) {
-
-            } catch (Json\Exception\InvalidArgumentException $e) {
-
-            } catch (Json\Exception\BadMethodCallException $e) {
-
+                $configs = Json::decode($configs, true);
+            } catch (\Exception $e) {
             }
         }
 
-        if (is_array($configs) && !empty($configs)) {
+        if (is_array($configs) && ! empty($configs)) {
             foreach ($configs as $key => $value) {
                 if (isset($this->configs[$key])) {
                     $this->configs[$key] = $value;
@@ -124,6 +120,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param null $key
+     *
      * @return array|mixed
      */
     public function getPurchase($key = null)
@@ -137,6 +134,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param array $purchase
+     *
      * @return $this
      */
     public function setPurchase($purchase = [])
@@ -152,6 +150,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param null $key
+     *
      * @return array|mixed
      */
     public function getCustomer($key = null)
@@ -165,6 +164,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param array $customer
+     *
      * @return $this
      */
     public function setCustomer($customer = [])
@@ -180,6 +180,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param null $key
+     *
      * @return array|mixed
      */
     public function getCard($key = null)
@@ -193,6 +194,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param array $card
+     *
      * @return $this
      */
     public function setCard($card = [])
@@ -208,6 +210,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param null $option
+     *
      * @return array|mixed
      */
     public function getOptions($option = null)
@@ -221,11 +224,12 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param array $options
+     *
      * @return $this
      */
     public function setOptions($options = [])
     {
-        if (is_array($options) && !empty($options)) {
+        if (is_array($options) && ! empty($options)) {
             foreach ($options as $optionKey => $optionValue) {
                 if (isset($this->options[$optionKey])) {
                     $this->options[$optionKey] = $optionValue;
@@ -246,6 +250,7 @@ class Cielo2 extends AbstractPayment
 
     /**
      * @param bool $devMode
+     *
      * @return $this
      */
     public function setDevMode($devMode = true)
@@ -253,6 +258,32 @@ class Cielo2 extends AbstractPayment
         $this->devMode = $devMode;
         return $this;
     }
+
+    /**
+     * @param int $cardNumber
+     *
+     * @return mixed|string
+     */
+    public function getCardBrand($cardNumber)
+    {
+        $environment = $this->devMode ? Environment::sandbox() : Environment::production();
+
+        // Merchant
+        $merchant = new Merchant($this->configs['identity'], $this->configs['credential']);
+
+        try {
+            $bin = (new CardBinRequest($merchant, $environment))->execute(mb_substr($this->card['number'], 0, 6));
+
+            if (! empty($bin['Provider'])) {
+                return mb_strtolower($bin['Provider']);
+            }
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
+
+        return parent::getCardBrand($cardNumber);
+    }
+
 
     /**
      * @return array
@@ -285,7 +316,7 @@ class Cielo2 extends AbstractPayment
 
         // Instância de Credit Card utilizando os dados de teste
         $payment->setType(Payment::PAYMENTTYPE_CREDITCARD);
-        $creditCard = $payment->creditCard($this->card['security'], ucfirst($this->card['flag']));
+        $creditCard = $payment->creditCard($this->card['security'], mb_ucfirst($this->card['flag']));
         $creditCard->setExpirationDate($this->card['month'] . '/' . $this->card['year'])
             ->setCardNumber($this->card['number'])
             ->setHolder($this->card['name']);
@@ -317,7 +348,7 @@ class Cielo2 extends AbstractPayment
                     'status' => $status,
                 ];
             }
-        } catch (CieloRequestException $e) {
+        } catch (\Exception $e) {
             $cieloError = $e->getCieloError();
 
             $message = is_object($cieloError) && method_exists($cieloError, 'getCode') ? sprintf('%s - %s', $cieloError->getCode(), $cieloError->getMessage()) : 'Pode ser um erro de configuração.';
